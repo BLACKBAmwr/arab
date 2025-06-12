@@ -122,30 +122,7 @@
     });
   </script>
 
-  <!-- تغيير اللون وتخزينه -->
-  <script>
-    // تطبيق اللون المحفوظ من قبل
-    let storedColor = localStorage.getItem('mainColor');
-    if (storedColor) {
-      document.documentElement.style.setProperty('--main-color', storedColor);
-      document.getElementById('colorPicker').value = storedColor;
-    }
-
-    // عند اختيار لون جديد
-    document.getElementById('colorPicker').addEventListener('input', function(event) {
-      let selectedColor = event.target.value;
-      document.documentElement.style.setProperty('--main-color', selectedColor);
-      localStorage.setItem('mainColor', selectedColor);
-    });
-
-    // عند تغيره من تبويب آخر
-    window.addEventListener('storage', function (e) {
-      if (e.key === 'mainColor') {
-        document.documentElement.style.setProperty('--main-color', e.newValue);
-        document.getElementById('colorPicker').value = e.newValue;
-      }
-    });
-  </script>
+  
 
   <!-- سكربت Firebase -->
   <script type="module">
