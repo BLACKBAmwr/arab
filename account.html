@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>منصة لغتنا الأم</title>
+ 
+</head>
+<body>
+  <header>لغتنا الأم</header>
+
+  <nav id="navbar">
+    <a href="index.html">الرئيسية</a>
+    <a href="about.html">من أنا؟</a>
+    <a href="contact.html">تواصل معنا</a>
+    <a id="acc" href="login.html">تسجيل دخول</a>
+  </nav>
+
+ 
+
+  <main>
+   <h1> تغير الاسم</h1>
+   
+  </main>
+
+
+  <footer>© 2025 لغتنا الأم - جميع الحقوق محفوظة</footer>
+
+  <!-- زر واتساب -->
+  <div class="whatsapp-float">
+    <a href="https://wa.me/201557995387" target="_blank">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="واتساب">
+    </a>
+  </div>
+
+
+خزينه -->
+  <script>
+    // تطبيق اللون المحفوظ من قبل
+    let storedColor = localStorage.getItem('mainColor');
+    if (storedColor) {
+      document.documentElement.style.setProperty('--main-color', storedColor);
+      document.getElementById('colorPicker').value = storedColor;
+    }
+
+    // عند اختيار لون جديد
+    document.getElementById('colorPicker').addEventListener('input', function(event) {
+      let selectedColor = event.target.value;
+      document.documentElement.style.setProperty('--main-color', selectedColor);
+      localStorage.setItem('mainColor', selectedColor);
+    });
+
+    // عند تغيره من تبويب آخر
+    window.addEventListener('storage', function (e) {
+      if (e.key === 'mainColor') {
+        document.documentElement.style.setProperty('--main-color', e.newValue);
+        document.getElementById('colorPicker').value = e.newValue;
+      }
+    });
+  </script>
+
+  <!-- سكربت Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC7CwNzF-4h4PY8nTOtxrCUHd3AzMZzPCw",
+      authDomain: "lugatuna.firebaseapp.com",
+      projectId: "lugatuna",
+      storageBucket: "lugatuna.appspot.com",
+      messagingSenderId: "411196040727",
+      appId: "1:411196040727:web:6ed03e75abf31f3a9a70e7",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const authLink = document.getElementById("authLink");
+    const userInfo = document.getElementById("userInfo");
+    const userName = document.getElementById("userName");
+    const userPhone = document.getElementById("userPhone");
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        authLink.textContent = "تسجيل خروج";
+        authLink.href = "#";
+        userInfo.style.display = "block";
+        userName.textContent = "أهلاً، " + (user.displayName || "مستخدم");
+
+        if (user.email === "admin@example.com") {
+          userPhone.textContent = "رقم الهاتف: 01012345678";
+          document.querySelector("#userInfo img").src = "admin.jpg";
+        } else {
+          userPhone.textContent = "رقم الهاتف: غير متاح";
+          document.querySelector("#userInfo img").src = "profile.jpg";
+        }
+
+        authLink.addEventListener("click", () => {
+          signOut(auth).then(() => window.location.reload());
+        });
+      } else {
+        authLink.textContent = "تسجيل دخول";
+        authLink.href = "login.html";
+        userInfo.style.display = "none";
+      }
+    });
+  </script>
+<script src="auth-status.js"></script>
+
+</body>
+</html>
