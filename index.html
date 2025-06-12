@@ -98,80 +98,13 @@
   <!-- زر واتساب -->
   <div class="whatsapp-float">
     <a href="https://wa.me/201557995387" target="_blank">
-      <img src="" alt="واتساب">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="واتساب">
     </a>
   </div>
 
 
 
-  <!-- مكتبة Swiper -->
-  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-
-  <!-- إعداد Swiper -->
-  <script>
-    const swiper = new Swiper(".mySwiper", {
-      loop: true,
-      navigation: {
-        nextEl: ".swiper-button-next",
-        prevEl: ".swiper-button-prev",
-      },
-      pagination: {
-        el: ".swiper-pagination",
-        clickable: true,
-      },
-    });
-  </script>
-
-  
-
-  <!-- سكربت Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyC7CwNzF-4h4PY8nTOtxrCUHd3AzMZzPCw",
-      authDomain: "lugatuna.firebaseapp.com",
-      projectId: "lugatuna",
-      storageBucket: "lugatuna.appspot.com",
-      messagingSenderId: "411196040727",
-      appId: "1:411196040727:web:6ed03e75abf31f3a9a70e7",
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    const authLink = document.getElementById("authLink");
-    const userInfo = document.getElementById("userInfo");
-    const userName = document.getElementById("userName");
-    const userPhone = document.getElementById("userPhone");
-
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        authLink.textContent = "تسجيل خروج";
-        authLink.href = "#";
-        userInfo.style.display = "block";
-        userName.textContent = "أهلاً، " + (user.displayName || "مستخدم");
-
-        if (user.email === "admin@example.com") {
-          userPhone.textContent = "رقم الهاتف: 01012345678";
-          document.querySelector("#userInfo img").src = "admin.jpg";
-        } else {
-          userPhone.textContent = "رقم الهاتف: غير متاح";
-          document.querySelector("#userInfo img").src = "profile.jpg";
-        }
-
-        authLink.addEventListener("click", () => {
-          signOut(auth).then(() => window.location.reload());
-        });
-      } else {
-        authLink.textContent = "تسجيل دخول";
-        authLink.href = "login.html";
-        userInfo.style.display = "none";
-      }
-    });
-  </script>
-<script src="auth-status.js"></script>
+ 
 
 </body>
 </html>
