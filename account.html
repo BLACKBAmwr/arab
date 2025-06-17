@@ -2,110 +2,138 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>منصة لغتنا الأم</title>
- 
+  <title>إدارة الحساب - لغتنا الأم</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@900&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header>لغتنا الأم</header>
-
-  <nav id="navbar">
-    <a href="index.html">الرئيسية</a>
-    <a href="about.html">من أنا؟</a>
-    <a href="contact.html">تواصل معنا</a>
-    <a id="acc" href="login.html">تسجيل دخول</a>
-  </nav>
-
- 
-
   <main>
-   <h1> تغير الاسم</h1>
-   
+    <h1>إعدادات الحساب</h1>
+    <div id="userSection" style="display: none;">
+      <p><strong>البريد:</strong> <span id="userEmail"></span></p>
+      <p><strong>الاسم الحالي:</strong> <span id="userDisplayName"></span></p>
+      <p><strong>الصورة الحالية:</strong><br><img id="userPhoto" src="" alt="الصورة" width="100" /></p>
+
+      <hr>
+
+      <label>الاسم الجديد:</label>
+      <input type="text" id="newName" placeholder="اكتب الاسم الجديد" />
+      <br>
+
+      <label>رابط الصورة الجديدة:</label>
+      <input type="text" id="newPhotoURL" placeholder="رابط صورة جديدة" />
+      <br>
+
+      <button onclick="updateProfileInfo()">تحديث الاسم / الصورة</button>
+
+      <hr>
+
+      <label>كلمة السر الجديدة:</label>
+      <input type="password" id="newPassword" placeholder="كلمة السر الجديدة" />
+      <button onclick="changePassword()">تغيير كلمة السر</button>
+
+      <hr>
+
+      <label>كلمة السر الحالية لتأكيد الحذف:</label>
+      <input type="password" id="currentPassword" placeholder="أدخل كلمة السر" />
+      <button style="color:red" onclick="deleteAccount()">❌ حذف الحساب نهائيًا</button>
+
+      <p id="statusMsg" style="color: green;"></p>
+    </div>
   </main>
 
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth,
+    onAuthStateChanged,
+    updateProfile,
+    updatePassword,
+    reauthenticateWithCredential,
+    EmailAuthProvider,
+    deleteUser
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-  <footer>© 2025 لغتنا الأم - جميع الحقوق محفوظة</footer>
+  const firebaseConfig = {
+    apiKey: "AIzaSyC7CwNzF-4h4PY8nTOtxrCUHd3AzMZzPCw",
+    authDomain: "lugatuna.firebaseapp.com",
+    projectId: "lugatuna",
+    storageBucket: "lugatuna.appspot.com",
+    messagingSenderId: "411196040727",
+    appId: "1:411196040727:web:6ed03e75abf31f3a9a70e7",
+  };
 
-  <!-- زر واتساب -->
-  <div class="whatsapp-float">
-    <a href="https://wa.me/201557995387" target="_blank">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="واتساب">
-    </a>
-  </div>
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
 
+  const userSection = document.getElementById("userSection");
+  const userEmail = document.getElementById("userEmail");
+  const userDisplayName = document.getElementById("userDisplayName");
+  const userPhoto = document.getElementById("userPhoto");
+  const statusMsg = document.getElementById("statusMsg");
 
-خزينه -->
-  <script>
-    // تطبيق اللون المحفوظ من قبل
-    let storedColor = localStorage.getItem('mainColor');
-    if (storedColor) {
-      document.documentElement.style.setProperty('--main-color', storedColor);
-      document.getElementById('colorPicker').value = storedColor;
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      userSection.style.display = "block";
+      userEmail.textContent = user.email;
+      userDisplayName.textContent = user.displayName || "غير محدد";
+      userPhoto.src = user.photoURL || "";
+    } else {
+      // 🛡️ تحويل المستخدم الغير مسجل لصفحة الدخول
+      window.location.href = "login.html";
     }
+  });
 
-    // عند اختيار لون جديد
-    document.getElementById('colorPicker').addEventListener('input', function(event) {
-      let selectedColor = event.target.value;
-      document.documentElement.style.setProperty('--main-color', selectedColor);
-      localStorage.setItem('mainColor', selectedColor);
+  // تحديث الاسم والصورة
+  window.updateProfileInfo = () => {
+    const user = auth.currentUser;
+    const newName = document.getElementById("newName").value;
+    const newPhotoURL = document.getElementById("newPhotoURL").value;
+
+    updateProfile(user, {
+      displayName: newName || user.displayName,
+      photoURL: newPhotoURL || user.photoURL
+    }).then(() => {
+      statusMsg.textContent = "✅ تم التحديث بنجاح.";
+      location.reload(); // إعادة تحميل لتحديث المعلومات
+    }).catch((error) => {
+      statusMsg.textContent = "❌ خطأ في التحديث: " + error.message;
     });
+  };
 
-    // عند تغيره من تبويب آخر
-    window.addEventListener('storage', function (e) {
-      if (e.key === 'mainColor') {
-        document.documentElement.style.setProperty('--main-color', e.newValue);
-        document.getElementById('colorPicker').value = e.newValue;
-      }
+  // تغيير كلمة السر
+  window.changePassword = () => {
+    const user = auth.currentUser;
+    const newPassword = document.getElementById("newPassword").value;
+
+    if (newPassword.length < 6) return alert("كلمة السر يجب أن تكون 6 أحرف على الأقل.");
+
+    updatePassword(user, newPassword).then(() => {
+      statusMsg.textContent = "✅ تم تغيير كلمة السر بنجاح.";
+    }).catch((error) => {
+      statusMsg.textContent = "❌ فشل تغيير كلمة السر: " + error.message;
     });
-  </script>
+  };
 
-  <!-- سكربت Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  // حذف الحساب
+  window.deleteAccount = () => {
+    const user = auth.currentUser;
+    const password = document.getElementById("currentPassword").value;
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyC7CwNzF-4h4PY8nTOtxrCUHd3AzMZzPCw",
-      authDomain: "lugatuna.firebaseapp.com",
-      projectId: "lugatuna",
-      storageBucket: "lugatuna.appspot.com",
-      messagingSenderId: "411196040727",
-      appId: "1:411196040727:web:6ed03e75abf31f3a9a70e7",
-    };
+    if (!password) return alert("أدخل كلمة السر لتأكيد الحذف.");
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    const credential = EmailAuthProvider.credential(user.email, password);
 
-    const authLink = document.getElementById("authLink");
-    const userInfo = document.getElementById("userInfo");
-    const userName = document.getElementById("userName");
-    const userPhone = document.getElementById("userPhone");
-
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        authLink.textContent = "تسجيل خروج";
-        authLink.href = "#";
-        userInfo.style.display = "block";
-        userName.textContent = "أهلاً، " + (user.displayName || "مستخدم");
-
-        if (user.email === "admin@example.com") {
-          userPhone.textContent = "رقم الهاتف: 01012345678";
-          document.querySelector("#userInfo img").src = "admin.jpg";
-        } else {
-          userPhone.textContent = "رقم الهاتف: غير متاح";
-          document.querySelector("#userInfo img").src = "profile.jpg";
-        }
-
-        authLink.addEventListener("click", () => {
-          signOut(auth).then(() => window.location.reload());
-        });
-      } else {
-        authLink.textContent = "تسجيل دخول";
-        authLink.href = "login.html";
-        userInfo.style.display = "none";
-      }
+    reauthenticateWithCredential(user, credential).then(() => {
+      return deleteUser(user);
+    }).then(() => {
+      alert("✅ تم حذف الحساب بنجاح.");
+      window.location.href = "login.html";
+    }).catch((error) => {
+      statusMsg.textContent = "❌ فشل حذف الحساب: " + error.message;
     });
-  </script>
-<script src="auth-status.js"></script>
+  };
+</script>
 
 </body>
 </html>

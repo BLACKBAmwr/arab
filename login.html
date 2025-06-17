@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
   <style>
       .form {       display: flex;       flex-direction: column;       gap: 10px;       max-width: 450px;       padding: 20px;       border-radius: 20px;       position: relative;       color: #fff;       border: 1px solid #333;       margin: 500px auto;       transform: scale(1.5);       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.95);        width: 100%;       height: 100%;       background: radial-gradient(           circle farthest-side at 0% 50%,           var(--main-color) 23.5%,           rgba(240, 166, 17, 0) 0         )         21px 30px,         radial-gradient(           circle farthest-side at 0% 50%,           #b71 24%,           rgba(240, 166, 17, 0) 0         )         19px 30px,         linear-gradient(           var(--main-color) 14%,           rgba(240, 166, 17, 0) 0,           rgba(240, 166, 17, 0) 85%,           var(--main-color) 0         )         0 0,         linear-gradient(           150deg,           var(--main-color) 24%,           #b71 0,           #b71 26%,           rgba(240, 166, 17, 0) 0,           rgba(240, 166, 17, 0) 74%,           #b71 0,           #b71 76%,           var(--main-color) 0         )         0 0,         linear-gradient(           30deg,           var(--main-color) 24%,           #b71 0,           #b71 26%,           rgba(240, 166, 17, 0) 0,           rgba(240, 166, 17, 0) 74%,           #b71 0,           #b71 76%,           var(--main-color) 0         )         0 0,         linear-gradient(90deg, #b71 2%, var(--main-color) 0, var(--main-color) 98%, #b71 0%) 0 0 var(--main-color);       background-size: 40px 60px;     }      .title {       font-size: 35px;       font-weight: 600;       letter-spacing: -1px;       position: relative;       display: flex;       align-items: center;       padding-right: 30px;       color: white;     }      .title::before {       width: 22px;       height: 22px;     }      .title::after {       width: 22px;       height: 22px;       animation: pulse 1s linear infinite;     }      .title::before,     .title::after {       position: absolute;       content: "";       height: 20px;       width: 20px;       border-radius: 50%;       right: 0px;       background-color: white;     }      .message,     .signin {       font-size: 17px;       color: rgba(255, 255, 255, 0.7);     }      .signin {       text-align: center;     }      .signin a:hover {       text-decoration: underline royalblue;     }      .signin a {       color: white;     }      .flex {       display: flex;       gap: 10px;       width: 100%;       margin: auto;       flex-wrap: wrap;     }      .form label {       position: relative;       width: 100%;       margin: auto;     }      .form label .input {       background-color: #333;       color: #fff;       width: 90%;       padding: 20px 5px 5px 10px;       outline: 0;       border: 1px solid rgba(105, 105, 105, 0.397);       border-radius: 10px;       text-align: right;     }      .form label .input + span {       color: rgba(255, 255, 255, 0.5);       position: absolute;       right: 10px;       top: 0px;       font-size: 0.9em;       cursor: text;       transition: 0.3s ease;     }      .form label .input:placeholder-shown + span {       top: 12.5px;       font-size: 0.9em;       right: 10px;     }      .form label .input:focus + span,     .form label .input:valid + span {       color: #00bfff;       top: 0px;       font-size: 0.7em;       font-weight: 600;       right: 10px;     }      .input {       font-size: medium;     }      .submit {       border: none;       outline: none;       padding: 10px 20px;       border-radius: 10px;       color: #fff;       font-size: 16px;       background-color: #F737FF;       margin: 10px;       font-family: 'Cairo', sans-serif;       position: relative;       overflow: hidden;       cursor: pointer;       transition: color 0.3s, font-size 0.3s;       z-index: 1;     }      /* الطبقة المتحركة */     .submit::before {       content: '';       position: absolute;       top: 0;       right: 0;       width: 100%;       height: 100%;       background: var(--main-color);       z-index: -1;       transform: translateX(100%);       transition: transform 0.5s ease;     }      /* نستخدم blend mode عشان نخلي الطبقة تمر من ورا النص */     .submit {       position: relative;       z-index: 2;     }      /* حركة عند الهوفر */     .submit:hover::before {       transform: translateX(0);     }      /* تنسيق عند الهوفر */     .submit:hover {       border: 2px #F737FF solid;       box-shadow: 0 5px 15px #F737FF;       color: #F737FF;       font-size: 18px;       font-weight: bold;       z-index: 999;     }      @keyframes pulse {       from {         transform: scale(0.9);         opacity: 1;       }        to {         transform: scale(1.8);         opacity: 0;       }     } 
 
@@ -17,8 +18,7 @@
     import {
       getAuth,
       signInWithEmailAndPassword,
-      sendPasswordResetEmail,
-      onAuthStateChanged // ✅ تم إضافته
+      sendPasswordResetEmail
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -30,19 +30,11 @@
       appId: "1:411196040727:web:6ed03e75abf31f3a9a70e7",
       measurementId: "G-TNSF3W6K7D"
     };
-
+    
+ 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // ✅ إذا كان المستخدم مسجل دخول بالفعل، نحوله إلى صفحة الحساب
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        alert("أنت مسجل الدخول بالفعل");
-        window.location.href = "account.html";
-      }
-    });
-
-    // ✅ التعامل مع تسجيل الدخول وإعادة تعيين كلمة المرور
     document.addEventListener("DOMContentLoaded", () => {
       const form = document.getElementById("loginForm");
       const errorDiv = document.getElementById("loginError");
@@ -58,25 +50,25 @@
             localStorage.setItem("userEmail", user.email);
             localStorage.setItem("logined", "true");
             alert("✅ تم تسجيل الدخول بنجاح!");
-            window.location.href = "account.html"; // ✅ التحويل بعد النجاح
+          
           })
           .catch((error) => {
             errorDiv.textContent = "⚠️ البريد الإلكتروني أو كلمة السر غير صحيحة";
           });
-      });
 
-      document.getElementById("resetPasswordLink").addEventListener("click", function (e) {
-        e.preventDefault();
-        const email = prompt("من فضلك أدخل بريدك الإلكتروني لإعادة تعيين كلمة السر:");
-        if (email) {
-          sendPasswordResetEmail(auth, email)
-            .then(() => {
-              alert("📩 تم إرسال رابط إعادة تعيين كلمة السر إلى بريدك.");
-            })
-            .catch((error) => {
-              alert("حدث خطأ: " + error.message);
-            });
-        }
+        document.getElementById("resetPasswordLink").addEventListener("click", function (e) {
+          e.preventDefault();
+          const email = prompt("من فضلك أدخل بريدك الإلكتروني لإعادة تعيين كلمة السر:");
+          if (email) {
+            sendPasswordResetEmail(auth, email)
+              .then(() => {
+                alert("📩 تم إرسال رابط إعادة تعيين كلمة السر إلى بريدك.");
+              })
+              .catch((error) => {
+                alert("حدث خطأ: " + error.message);
+              });
+          }
+        });
       });
     });
   </script>
@@ -92,7 +84,7 @@
     <a id="acc" href="login.html">تسجيل دخول</a>
   </nav>
 
-  <form id="loginForm" class="form animate__animated animate__zoomInUp">
+  <form id="loginForm" class="form animate_animated animate_zoomInUp">
     <p class="title">تسجيل دخول</p>
 
     <label>
@@ -105,7 +97,7 @@
       <span>كلمة السر</span>
     </label>
 
-    <p id="loginError" style="color: red;"></p>
+    <p id="loginError"></p>
 
     <p style="text-align: center;">
       <a href="#" id="resetPasswordLink" style="color: white;">هل نسيت كلمة السر؟</a>
@@ -116,6 +108,8 @@
   </form>
 
   <footer>© 2025 لغتنا الأم - جميع الحقوق محفوظة</footer>
+
+ <script src="auth-status.js"></script>
 
 </body>
 </html>
