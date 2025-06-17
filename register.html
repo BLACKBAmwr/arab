@@ -87,66 +87,53 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
   <script>
-    // إعداد Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyCgOOI9kQPJ-cBkjpMkuQYNLKLlPgNR-Mg",
-      authDomain: "lo8tna.firebaseapp.com",
-      projectId: "lo8tna",
-      storageBucket: "lo8tna.firebasestorage.app",
-      messagingSenderId: "189349109049",
-      appId: "1:189349109049:web:c5ed0efadf68e53a849ce8",
-      measurementId: "G-QW4RKCSHWB"
-    };
+  
+  const API_URL = "https://api.backendless.com/B7DE4160-73F7-4BD9-BF54-F10E6053901B/70E3B68F-2879-4E35-9DBF-2C9FA1F2FA9F/users/register";
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-  firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-      // المستخدم مسجل دخول بالفعل → نعيد توجيهه للصفحة الرئيسية أو لوحة التحكم
-      window.location.href = "account.html"; // غيّر الرابط حسب الحاجة
+  const form = document.getElementById('registerForm');
+  const errorMsg = document.getElementById('error');
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const phone = document.getElementById('phone').value.trim();
+
+    if (password !== confirmPassword) {
+      errorMsg.textContent = "❌ كلمة المرور غير متطابقة";
+      return;
     }
-  });
 
-  </script>
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+          name: firstName + " " + lastName,
+          phone: phone
+        })
+      });
 
-  <script>
-    const form = document.getElementById('registerForm');
-    const errorMsg = document.getElementById('error');
+      const data = await response.json();
 
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-
-      const firstName = document.getElementById('firstName').value.trim();
-      const lastName = document.getElementById('lastName').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const confirmPassword = document.getElementById('confirmPassword').value;
-
-      if (password !== confirmPassword) {
-        errorMsg.textContent = "❌ كلمة المرور غير متطابقة";
-        return;
+      if (!response.ok) {
+        throw new Error(data.message || "حدث خطأ أثناء التسجيل");
       }
 
-      auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          return user.updateProfile({
-            displayName: `${firstName} ${lastName}`
-          });
-        })
-        .then(() => {
-          alert("✅ تم إنشاء الحساب بنجاح!");
-          window.location.href = "login.html";
-        })
-        .catch((error) => {
-          errorMsg.textContent = `❌ ${error.message}`;
-        });
-    });
-
-
-
-
-
+      alert("✅ تم إنشاء الحساب بنجاح!");
+      window.location.href = "login.html";
+    } catch (error) {
+      errorMsg.textContent = `❌ ${error.message}`;
+    }
+  });
 
   </script>
 <script src="auth-status.js"></script>
