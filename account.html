@@ -42,127 +42,82 @@
     </div>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/backendless@7.2.8/dist/backendless.min.js"></script>
   <script>
-    const APP_ID = "B7DE4160-73F7-4BD9-BF54-F10E6053901B";
-    const API_KEY = "70E3B68F-2879-4E35-9DBF-2C9FA1F2FA9F";
-    const USER_TOKEN = localStorage.getItem("user-token");
-    const USER_ID = localStorage.getItem("user-id");
+    Backendless.initApp("31CE9A4A-A325-4013-967C-DCABD1EF3000", "A19DA83C-B99F-4291-BC2C-3C8E77AFB23B");
 
-    const userSection = document.getElementById("userSection");
-    const userEmail = document.getElementById("userEmail");
-    const userDisplayName = document.getElementById("userDisplayName");
-    const userPhoto = document.getElementById("userPhoto");
-    const statusMsg = document.getElementById("statusMsg");
+    let currentUser;
 
-   
-
-    // عرض بيانات المستخدم
-    fetch(`https://api.backendless.com/${APP_ID}/${API_KEY}/users/${USER_ID}`, {
-      headers: {
-        "user-token": USER_TOKEN
-      }
-    })
-    .then(res => {
-      if (!res.ok) throw new Error("غير مسموح");
-      return res.json();
-    })
-    .then(user => {
-      userSection.style.display = "block";
-      userEmail.textContent = user.email;
-      userDisplayName.textContent = user.name || "غير محدد";
-      userPhoto.src = user.photo || "";
-    })
-    .catch(() => {
-      window.location.href = #;
-    });
+    Backendless.UserService.getCurrentUser()
+      .then(user => {
+        if (user) {
+          currentUser = user;
+          document.getElementById("userSection").style.display = "block";
+          document.getElementById("userEmail").textContent = user.email;
+          document.getElementById("userDisplayName").textContent = user.name || "غير محدد";
+          document.getElementById("userPhoto").src = user.photo || "";
+        } else {
+          document.getElementById("statusMsg").textContent = "⚠️ لم يتم تسجيل الدخول";
+        }
+      })
+      .catch(err => {
+        document.getElementById("statusMsg").textContent = "❌ فشل تحميل الحساب: " + err.message;
+      });
 
     // تحديث الاسم والصورة
     function updateProfileInfo() {
       const newName = document.getElementById("newName").value;
       const newPhotoURL = document.getElementById("newPhotoURL").value;
 
-      fetch(`https://api.backendless.com/${APP_ID}/${API_KEY}/users/${USER_ID}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "user-token": USER_TOKEN
-        },
-        body: JSON.stringify({
-          name: newName,
-          photo: newPhotoURL
+      currentUser.name = newName || currentUser.name;
+      currentUser.photo = newPhotoURL || currentUser.photo;
+
+      Backendless.UserService.update(currentUser)
+        .then(() => {
+          document.getElementById("statusMsg").textContent = "✅ تم التحديث بنجاح";
+          location.reload();
         })
-      })
-      .then(res => res.json())
-      .then(() => {
-        statusMsg.style.color = "green";
-        statusMsg.textContent = "✅ تم التحديث بنجاح.";
-        if (newName) userDisplayName.textContent = newName;
-        if (newPhotoURL) userPhoto.src = newPhotoURL;
-      })
-      .catch(() => {
-        statusMsg.style.color = "red";
-        statusMsg.textContent = "❌ حدث خطأ في التحديث.";
-      });
+        .catch(err => {
+          document.getElementById("statusMsg").textContent = "❌ فشل التحديث: " + err.message;
+        });
     }
 
     // تغيير كلمة السر
     function changePassword() {
       const newPassword = document.getElementById("newPassword").value;
-      if (newPassword.length < 6) return alert("كلمة السر يجب أن تكون 6 أحرف على الأقل.");
+      if (newPassword.length < 6) {
+        alert("كلمة السر لازم تكون 6 أحرف على الأقل");
+        return;
+      }
 
-      fetch(`https://api.backendless.com/${APP_ID}/${API_KEY}/users/${USER_ID}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "user-token": USER_TOKEN
-        },
-        body: JSON.stringify({
-          password: newPassword
+      Backendless.UserService.setPassword(newPassword)
+        .then(() => {
+          document.getElementById("statusMsg").textContent = "✅ تم تغيير كلمة السر";
         })
-      })
-      .then(res => res.json())
-      .then(() => {
-        statusMsg.style.color = "green";
-        statusMsg.textContent = "✅ تم تغيير كلمة السر.";
-      })
-      .catch(() => {
-        statusMsg.style.color = "red";
-        statusMsg.textContent = "❌ فشل في تغيير كلمة السر.";
-      });
+        .catch(err => {
+          document.getElementById("statusMsg").textContent = "❌ فشل تغيير كلمة السر: " + err.message;
+        });
     }
 
     // حذف الحساب
     function deleteAccount() {
-      const password = document.getElementById("currentPassword").value;
-      if (!password) return alert("أدخل كلمة السر لتأكيد الحذف.");
+      const currentPassword = document.getElementById("currentPassword").value;
+      if (!currentPassword) {
+        alert("أدخل كلمة السر لتأكيد الحذف");
+        return;
+      }
 
-      // تسجيل الدخول لتأكيد الباسورد
-      fetch(`https://api.backendless.com/${APP_ID}/${API_KEY}/users/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          login: userEmail.textContent,
-          password: password
+      const login = currentUser.email;
+
+      Backendless.UserService.login(login, currentPassword, true)
+        .then(() => Backendless.UserService.deleteUser(currentUser))
+        .then(() => {
+          alert("✅ تم حذف الحساب");
+          window.location.href = "login.html";
         })
-      })
-      .then(res => {
-        if (!res.ok) throw new Error("كلمة السر غير صحيحة");
-        return fetch(`https://api.backendless.com/${APP_ID}/${API_KEY}/users/${USER_ID}`, {
-          method: "DELETE",
-          headers: {
-            "user-token": USER_TOKEN
-          }
+        .catch(err => {
+          document.getElementById("statusMsg").textContent = "❌ فشل حذف الحساب: " + err.message;
         });
-      })
-      .then(() => {
-        alert("✅ تم حذف الحساب.");
-        localStorage.clear();
-        window.location.href = "login.html";
-      })
-      .catch(err => {
-        statusMsg.style.color = "red";
-        statusMsg.textContent = "❌ فشل حذف الحساب: " + err.message;
-      });
     }
   </script>
 </body>
