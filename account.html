@@ -1,123 +1,74 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-  <meta charset="UTF-8" />
-  <title>إدارة الحساب - لغتنا الأم</title>
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@900&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>إدارة الحساب</title>
+  <script src="https://cdn.jsdelivr.net/npm/backendless@7.2.5/dist/backendless.min.js"></script>
+<link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main>
-    <h1>إعدادات الحساب</h1>
-    <div id="userSection" style="display: none;">
-      <p><strong>البريد:</strong> <span id="userEmail"></span></p>
-      <p><strong>الاسم الحالي:</strong> <span id="userDisplayName"></span></p>
-      <p><strong>الصورة الحالية:</strong><br><img id="userPhoto" src="" alt="الصورة" width="100" /></p>
 
-      <hr>
+  <h2>مرحبا بك في صفحة إدارة الحساب</h2>
+  <p id="welcome"></p>
+  <p id="coinsDisplay">جاري تحميل رصيدك...</p>
 
-      <label>الاسم الجديد:</label>
-      <input type="text" id="newName" placeholder="اكتب الاسم الجديد" />
-      <br>
+  <div id="adminPanel">
+    <h3>لوحة الأدمن - إضافة عملات لأي مستخدم</h3>
+    <select id="userList"></select><br>
+    <input type="number" id="amount" placeholder="عدد العملات">
+    <button onclick="addCoinsToUser()">أضف العملات</button>
+  </div>
 
-      <label>رابط الصورة الجديدة:</label>
-      <input type="text" id="newPhotoURL" placeholder="رابط صورة جديدة" />
-      <br>
-
-      <button onclick="updateProfileInfo()">تحديث الاسم / الصورة</button>
-
-      <hr>
-
-      <label>كلمة السر الجديدة:</label>
-      <input type="password" id="newPassword" placeholder="كلمة السر الجديدة" />
-      <button onclick="changePassword()">تغيير كلمة السر</button>
-
-      <hr>
-
-      <label>كلمة السر الحالية لتأكيد الحذف:</label>
-      <input type="password" id="currentPassword" placeholder="أدخل كلمة السر" />
-      <button style="color:red" onclick="deleteAccount()">❌ حذف الحساب نهائيًا</button>
-
-      <p id="statusMsg" style="color: green;"></p>
-    </div>
-  </main>
-
-  <script src="https://cdn.jsdelivr.net/npm/backendless@7.2.8/dist/backendless.min.js"></script>
   <script>
-    Backendless.initApp("31CE9A4A-A325-4013-967C-DCABD1EF3000", "A19DA83C-B99F-4291-BC2C-3C8E77AFB23B");
+    // بيانات التطبيق بتاعتك من Backendless
+    const APP_ID = "B7DE4160-73F7-4BD9-BF54-F10E6053901B";
+    const API_KEY = "70E3B68F-2879-4E35-9DBF-2C9FA1F2FA9F";
+    Backendless.initApp(APP_ID, API_KEY);
 
-    let currentUser;
+    // تسجيل الدخول تلقائي (للتجربة ممكن تربطه بصفحة login بعدين)
+    Backendless.UserService.login("admin1@test.com", "1234567899", true)
+      .then(currentUser => {
+        document.getElementById("welcome").innerText = `مرحبًا، ${currentUser.email}`;
+        document.getElementById("coinsDisplay").innerText = `رصيدك: ${currentUser.coins || 0} عملة`;
 
-    Backendless.UserService.getCurrentUser()
-      .then(user => {
-        if (user) {
-          currentUser = user;
-          document.getElementById("userSection").style.display = "block";
-          document.getElementById("userEmail").textContent = user.email;
-          document.getElementById("userDisplayName").textContent = user.name || "غير محدد";
-          document.getElementById("userPhoto").src = user.photo || "";
-        } else {
-          document.getElementById("statusMsg").textContent = "⚠️ لم يتم تسجيل الدخول";
+        if (currentUser.role === "admin") {
+          showAdminPanel();
         }
-      })
-      .catch(err => {
-        document.getElementById("statusMsg").textContent = "❌ فشل تحميل الحساب: " + err.message;
       });
 
-    // تحديث الاسم والصورة
-    function updateProfileInfo() {
-      const newName = document.getElementById("newName").value;
-      const newPhotoURL = document.getElementById("newPhotoURL").value;
+    // عرض لوحة الأدمن
+    function showAdminPanel() {
+      document.getElementById("adminPanel").style.display = "block";
 
-      currentUser.name = newName || currentUser.name;
-      currentUser.photo = newPhotoURL || currentUser.photo;
-
-      Backendless.UserService.update(currentUser)
-        .then(() => {
-          document.getElementById("statusMsg").textContent = "✅ تم التحديث بنجاح";
-          location.reload();
-        })
-        .catch(err => {
-          document.getElementById("statusMsg").textContent = "❌ فشل التحديث: " + err.message;
+      Backendless.Data.of("Users").find().then(users => {
+        const userList = document.getElementById("userList");
+        userList.innerHTML = "";
+        users.forEach(user => {
+          const option = document.createElement("option");
+          option.value = user.objectId;
+          option.text = `${user.email} - ${user.coins || 0} عملة`;
+          userList.appendChild(option);
         });
+      });
     }
 
-    // تغيير كلمة السر
-    function changePassword() {
-      const newPassword = document.getElementById("newPassword").value;
-      if (newPassword.length < 6) {
-        alert("كلمة السر لازم تكون 6 أحرف على الأقل");
+    // إضافة عملات للمستخدم
+    function addCoinsToUser() {
+      const selectedUserId = document.getElementById("userList").value;
+      const amount = parseInt(document.getElementById("amount").value);
+
+      if (isNaN(amount) || amount <= 0) {
+        alert("من فضلك أدخل رقم صحيح.");
         return;
       }
 
-      Backendless.UserService.setPassword(newPassword)
-        .then(() => {
-          document.getElementById("statusMsg").textContent = "✅ تم تغيير كلمة السر";
-        })
-        .catch(err => {
-          document.getElementById("statusMsg").textContent = "❌ فشل تغيير كلمة السر: " + err.message;
-        });
-    }
-
-    // حذف الحساب
-    function deleteAccount() {
-      const currentPassword = document.getElementById("currentPassword").value;
-      if (!currentPassword) {
-        alert("أدخل كلمة السر لتأكيد الحذف");
-        return;
-      }
-
-      const login = currentUser.email;
-
-      Backendless.UserService.login(login, currentPassword, true)
-        .then(() => Backendless.UserService.deleteUser(currentUser))
-        .then(() => {
-          alert("✅ تم حذف الحساب");
-          window.location.href = "login.html";
-        })
-        .catch(err => {
-          document.getElementById("statusMsg").textContent = "❌ فشل حذف الحساب: " + err.message;
-        });
+      Backendless.Data.of("Users").findById(selectedUserId).then(user => {
+        user.coins = (user.coins || 0) + amount;
+        return Backendless.Data.of("Users").save(user);
+      }).then(updated => {
+        alert(`تم إضافة ${amount} عملة لـ ${updated.email}. الرصيد الجديد: ${updated.coins}`);
+        showAdminPanel(); // تحديث القائمة بعد التعديل
+      });
     }
   </script>
 </body>
