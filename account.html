@@ -22,7 +22,6 @@
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
       max-width: 500px;
       margin-top: 20px;
-      margin 0 auto;
     }
 
     select, input, button {
@@ -92,18 +91,21 @@
     const API_KEY = "70E3B68F-2879-4E35-9DBF-2C9FA1F2FA9F";
     Backendless.initApp(APP_ID, API_KEY);
 
-    // تسجيل دخول الأدمن
-    Backendless.UserService.login("admin@gmail.com", "1234567", true)
-      .then(currentUser => {
-        document.getElementById("welcome").innerText = `مرحبًا، ${currentUser.email}`;
-        document.getElementById("coinsDisplay").innerText = `رصيدك: ${currentUser.coins || 0} عملة`;
+   Backendless.UserService.login("admin@gmail.com", "1234567", true)
+  .then(() => {
+    return Backendless.UserService.getCurrentUser();
+  })
+  .then(currentUser => {
+    document.getElementById("welcome").innerText = `مرحبًا، ${currentUser.email}`;
+    document.getElementById("coinsDisplay").innerText = `رصيدك: ${currentUser.coins || 0} عملة`;
 
-        if (currentUser.role === "admin") {
-          showAdminPanel();
-        } else {
-          alert("أنت لا تمتلك صلاحية الأدمن.");
-        }
-      });
+    if (currentUser.role === "admin") {
+      showAdminPanel();
+    } else {
+      alert("أنت لا تمتلك صلاحية الأدمن.");
+    }
+  });
+
 
     function showAdminPanel() {
       document.getElementById("adminPanel").style.display = "block";
