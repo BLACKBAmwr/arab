@@ -2,121 +2,53 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>لوحة إدارة العملات</title>
+  <title>لوحة المستخدم</title>
   <script src="https://cdn.jsdelivr.net/npm/backendless@7.2.5/dist/backendless.min.js"></script>
-  <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@900&display=swap" rel="stylesheet">
-  <link rel="icon" href="logo.png" type="image/jpeg">
   <style>
-    body {
-      font-family: 'Cairo', sans-serif;
-      background-color: #f5f5f5;
-      padding: 20px;
-    }
-
-    h2, h3 {
-      color: var(--main-color, #4CAF50);
-    }
-
+    body { font-family: 'Cairo', sans-serif; background: #f5f5f5; padding: 20px; }
     #adminPanel, #userPanel {
-      padding: 20px;
-      border-radius: 12px;
-      background-color: white;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-      max-width: 600px;
-      margin-top: 20px;
+      background: white; padding: 20px; border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.1); margin-top: 20px;
     }
-
-    select, input, button {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
+    .lecture { background: #f9f9f9; padding: 10px; margin: 5px 0; border-radius: 6px; }
+    .btn, input, select {
+      width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px;
     }
-
-    button {
-      background-color: var(--main-color, #4CAF50);
-      color: white;
-      border: none;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      background-color: #3a8d40;
-    }
-
-    .btn-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .btn-row button {
-      flex: 1;
-    }
-
-    .alert {
-      padding: 10px;
-      margin-top: 10px;
-      background-color: #e0f2e9;
-      color: #2e7d32;
-      border: 1px solid #b2dfdb;
-      border-radius: 6px;
-    }
-
-    .lecture {
-      padding: 10px;
-      background: #f9f9f9;
-      border: 1px solid #ccc;
-      margin-bottom: 10px;
-      border-radius: 8px;
-    }
-
+    .btn { background: #4CAF50; color: white; border: none; cursor: pointer; }
+    .alert { background: #e0f2e9; padding: 10px; border-radius: 6px; color: #2e7d32; margin-top: 10px; }
     .whatsapp-box {
-      margin-top: 20px;
-      padding: 10px;
-      background: #fff3cd;
-      color: #856404;
-      border: 1px solid #ffeeba;
-      border-radius: 6px;
+      margin-top: 20px; padding: 10px; background: #fff3cd;
+      border: 1px solid #ffeeba; color: #856404; border-radius: 6px;
     }
   </style>
 </head>
 <body>
-
-  <h2>لوحة العملات</h2>
+  <h2>لوحة المستخدم</h2>
   <p id="welcome"></p>
   <p id="coinsDisplay">جاري تحميل رصيدك...</p>
 
   <!-- لوحة الأدمن -->
   <div id="adminPanel" style="display:none;">
-    <h3>التحكم في رصيد المستخدمين</h3>
+    <h3>لوحة تحكم الأدمن</h3>
     <select id="userList"></select>
     <input type="number" id="amount" placeholder="عدد العملات">
-    <div class="btn-row">
-      <button onclick="addCoinsToUser()">➕ إضافة</button>
-      <button onclick="removeCoinsFromUser()">➖ خصم</button>
-    </div>
+    <button class="btn" onclick="addCoins()">➕ إضافة</button>
+    <button class="btn" onclick="removeCoins()">➖ خصم</button>
     <div id="alertBox" class="alert" style="display:none;"></div>
   </div>
 
   <!-- لوحة المستخدم العادي -->
   <div id="userPanel" style="display:none;">
     <h3>📚 المحاضرات المتاحة</h3>
-    <div class="lecture">📘 محاضرة 1: أساسيات البرمجة</div>
-    <div class="lecture">📘 محاضرة 2: تصميم واجهات HTML/CSS</div>
-    <div class="lecture">📘 محاضرة 3: مبادئ JavaScript</div>
-
-    <p style="margin-top:15px;">⚠️ أنت لم تشترِ محاضرات حتى الآن.</p>
+    <div class="lecture">محاضرة 1: HTML & CSS</div>
+    <div class="lecture">محاضرة 2: JavaScript</div>
+    <div class="lecture">محاضرة 3: تصميم واجهات</div>
+    <p>⚠️ أنت لم تشترِ محاضرات بعد.</p>
 
     <div class="whatsapp-box">
-      💬 هل تريد شراء محاضرات أو شحن العملات؟ تواصل معنا عبر واتساب:
-      <br>
-      <strong><a href="https://wa.me/201234567890" target="_blank">اضغط هنا للتواصل</a></strong>
+      هل تريد شراء محاضرات أو شحن العملات؟ تواصل معنا عبر واتساب:<br>
+      <a href="https://wa.me/201234567890" target="_blank">اضغط هنا للتواصل</a>
     </div>
   </div>
 
@@ -125,71 +57,66 @@
     const API_KEY = "70E3B68F-2879-4E35-9DBF-2C9FA1F2FA9F";
     Backendless.initApp(APP_ID, API_KEY);
 
-    Backendless.UserService.login("admin@gmail.com", "1234567", true)
-      .then(() => Backendless.UserService.getCurrentUser())
-      .then(currentUser => {
-        document.getElementById("welcome").innerText = `مرحبًا، ${currentUser.email}`;
-        document.getElementById("coinsDisplay").innerText = `رصيدك: ${currentUser.coins || 0} عملة`;
+    Backendless.UserService.getCurrentUser()
+      .then(user => {
+        if (!user) return alert("يرجى تسجيل الدخول أولاً.");
+        document.getElementById("welcome").innerText = `مرحبًا، ${user.email}`;
+        document.getElementById("coinsDisplay").innerText = `رصيدك: ${user.coins || 0} عملة`;
 
-        if (currentUser.role === "admin") {
+        if (user.role === "admin") {
           document.getElementById("adminPanel").style.display = "block";
-          showAdminPanel();
+          loadUsers();
         } else {
           document.getElementById("userPanel").style.display = "block";
         }
-      })
-      .catch(error => {
-        alert("خطأ في تسجيل الدخول: " + error.message);
       });
 
-    function showAdminPanel() {
+    function loadUsers() {
       Backendless.Data.of("Users").find().then(users => {
-        const userList = document.getElementById("userList");
-        userList.innerHTML = "";
-        users.forEach(user => {
-          const option = document.createElement("option");
-          option.value = user.objectId;
-          option.text = `${user.email} - ${user.coins || 0} عملة`;
-          userList.appendChild(option);
+        const list = document.getElementById("userList");
+        list.innerHTML = "";
+        users.forEach(u => {
+          const opt = document.createElement("option");
+          opt.value = u.objectId;
+          opt.text = `${u.email} - ${u.coins || 0} عملة`;
+          list.appendChild(opt);
         });
       });
     }
 
-    function showAlert(message) {
+    function showAlert(msg) {
       const alertBox = document.getElementById("alertBox");
-      alertBox.innerText = message;
+      alertBox.innerText = msg;
       alertBox.style.display = "block";
       setTimeout(() => alertBox.style.display = "none", 3000);
     }
 
-    function addCoinsToUser() {
-      const selectedUserId = document.getElementById("userList").value;
+    function addCoins() {
+      const id = document.getElementById("userList").value;
       const amount = parseInt(document.getElementById("amount").value);
-      if (isNaN(amount) || amount <= 0) return showAlert("أدخل عدد عملات صحيح.");
+      if (isNaN(amount) || amount <= 0) return showAlert("أدخل عدد صحيح.");
 
-      Backendless.Data.of("Users").findById(selectedUserId).then(user => {
+      Backendless.Data.of("Users").findById(id).then(user => {
         user.coins = (user.coins || 0) + amount;
         return Backendless.Data.of("Users").save(user);
-      }).then(updated => {
-        showAlert(`تم إضافة ${amount} عملة إلى ${updated.email}.`);
-        showAdminPanel();
+      }).then(() => {
+        showAlert("تمت الإضافة بنجاح.");
+        loadUsers();
       });
     }
 
-    function removeCoinsFromUser() {
-      const selectedUserId = document.getElementById("userList").value;
+    function removeCoins() {
+      const id = document.getElementById("userList").value;
       const amount = parseInt(document.getElementById("amount").value);
-      if (isNaN(amount) || amount <= 0) return showAlert("أدخل عدد عملات صحيح.");
+      if (isNaN(amount) || amount <= 0) return showAlert("أدخل عدد صحيح.");
 
-      Backendless.Data.of("Users").findById(selectedUserId).then(user => {
-        if ((user.coins || 0) < amount) return showAlert("لا يمكن خصم أكثر من الرصيد الحالي.");
+      Backendless.Data.of("Users").findById(id).then(user => {
+        if ((user.coins || 0) < amount) return showAlert("رصيد غير كافٍ.");
         user.coins -= amount;
         return Backendless.Data.of("Users").save(user);
-      }).then(updated => {
-        if (updated) {
-          showAlert(`تم خصم ${amount} عملة من ${updated.email}.`);
-          showAdminPanel();
-        }
+      }).then(() => {
+        showAlert("تم الخصم بنجاح.");
+        loadUsers();
       });
     }
   </script>
