@@ -17,7 +17,7 @@
   <header style="text-align: center; font-size: 32px; margin-top: 20px;">لغتنا الأم</header>
 
   <nav>
-    <a href="index.html">الرئيسية</a>
+  <a href="index.html">الرئيسية</a>
     <a href="about.html">من أنا؟</a>
     <a href="contact.html">تواصل معنا</a>
     <a id="acc" href="login.html">تسجيل دخول</a>
@@ -63,7 +63,10 @@
       e.preventDefault();
       const email = document.getElementById("loginEmail").value;
       const password = document.getElementById("loginPassword").value;
-
+if (email == "admin@gmail.com" & password == "1234567")
+      {
+        window.location.href = "admin1122.html"
+      }
       try {
         const response = await fetch(`${BASE_URL}/users/login`, {
           method: "POST",
@@ -78,17 +81,13 @@
         }
 
         const data = await response.json();
-
-        // 🟢 تخزين معلومات تسجيل الدخول
         localStorage.setItem("userToken", data["user-token"]);
         localStorage.setItem("userEmail", data.email);
-        localStorage.setItem("userId", data.objectId);
-        localStorage.setItem("userRole", data.role || "user"); // لو role مش موجودة
-        localStorage.setItem("userCoins", data.coins || 0);
         localStorage.setItem("logined", "true");
 
         alert("✅ تم تسجيل الدخول بنجاح!");
-        window.location.href = "dashboard.html";
+       
+        window.location.href = "index.html";
 
       } catch (error) {
         console.log(error);
@@ -114,9 +113,7 @@
       }
     });
   });
-
 </script>
-
 
 </body>
 </html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>لوحة إدارة العملات</title>
+  <script src="https://cdn.jsdelivr.net/npm/backendless@7.2.5/dist/backendless.min.js"></script>
+   <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@900&display=swap" rel="stylesheet">
+  <link rel="icon" href="logo.png" type="image/jpeg">
+  <style>
+  
+
+    h2, h3 {
+      color: var(--main-color);
+    }
+
+    #adminPanel {
+      display: none;
+      padding: 20px;
+      border-radius: 12px;
+      background-color: white;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      margin-top: 20px;
+    }
+
+    select, input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: var(--main-color);
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #3a8d40;
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .btn-row button {
+      flex: 1;
+    }
+
+    .alert {
+      padding: 10px;
+      margin-top: 10px;
+      background-color: #e0f2e9;
+      color: #2e7d32;
+      border: 1px solid #b2dfdb;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>إدارة العملات - لوحة الأدمن</h2>
+  <p id="welcome"></p>
+  <p id="coinsDisplay">جاري تحميل رصيدك...</p>
+
+  <div id="adminPanel">
+    <h3>التحكم في رصيد المستخدمين</h3>
+    <select id="userList"></select>
+
+    <input type="number" id="amount" placeholder="عدد العملات">
+
+    <div class="btn-row">
+      <button onclick="addCoinsToUser()">➕ إضافة</button>
+      <button onclick="removeCoinsFromUser()">➖ خصم</button>
+    </div>
+
+    <div id="alertBox" class="alert" style="display:none;"></div>
+  </div>
+
+  <script>
+    const APP_ID = "B7DE4160-73F7-4BD9-BF54-F10E6053901B";
+    const API_KEY = "70E3B68F-2879-4E35-9DBF-2C9FA1F2FA9F";
+    Backendless.initApp(APP_ID, API_KEY);
+
+   Backendless.UserService.login("admin@gmail.com", "1234567", true)
+  .then(() => {
+    return Backendless.UserService.getCurrentUser();
+  })
+  .then(currentUser => {
+    document.getElementById("welcome").innerText = `مرحبًا، ${currentUser.email}`;
+    document.getElementById("coinsDisplay").innerText = `رصيدك: ${currentUser.coins || 0} عملة`;
+
+    if (currentUser.role === "admin") {
+      showAdminPanel();
+    } else {
+      alert("أنت لا تمتلك صلاحية الأدمن.");
+    }
+  });
+
+
+    function showAdminPanel() {
+      document.getElementById("adminPanel").style.display = "block";
+
+      Backendless.Data.of("Users").find().then(users => {
+        const userList = document.getElementById("userList");
+        userList.innerHTML = "";
+        users.forEach(user => {
+          const option = document.createElement("option");
+          option.value = user.objectId;
+          option.text = `${user.email} - ${user.coins || 0} عملة`;
+          userList.appendChild(option);
+        });
+      });
+    }
+
+    function showAlert(message) {
+      const alertBox = document.getElementById("alertBox");
+      alertBox.innerText = message;
+      alertBox.style.display = "block";
+      setTimeout(() => {
+        alertBox.style.display = "none";
+      }, 3000);
+    }
+
+    function addCoinsToUser() {
+      const selectedUserId = document.getElementById("userList").value;
+      const amount = parseInt(document.getElementById("amount").value);
+
+      if (isNaN(amount) || amount <= 0) {
+        showAlert("من فضلك أدخل عدد عملات صحيح.");
+        return;
+      }
+
+      Backendless.Data.of("Users").findById(selectedUserId).then(user => {
+        user.coins = (user.coins || 0) + amount;
+        return Backendless.Data.of("Users").save(user);
+      }).then(updated => {
+        showAlert(`تم إضافة ${amount} عملة إلى ${updated.email}. الرصيد الجديد: ${updated.coins}`);
+        showAdminPanel();
+      });
+    }
+
+    function removeCoinsFromUser() {
+      const selectedUserId = document.getElementById("userList").value;
+      const amount = parseInt(document.getElementById("amount").value);
+
+      if (isNaN(amount) || amount <= 0) {
+        showAlert("من فضلك أدخل عدد عملات صحيح.");
+        return;
+      }
+
+      Backendless.Data.of("Users").findById(selectedUserId).then(user => {
+        let current = user.coins || 0;
+        if (current < amount) {
+          showAlert("لا يمكن خصم أكثر من الرصيد الحالي.");
+          return;
+        }
+
+        user.coins = current - amount;
+        return Backendless.Data.of("Users").save(user);
+      }).then(updated => {
+        if (updated) {
+          showAlert(`تم خصم ${amount} عملة من ${updated.email}. الرصيد الجديد: ${updated.coins}`);
+          showAdminPanel();
+        }
+      });
+    }
+  </script>
+</body>
+</html>

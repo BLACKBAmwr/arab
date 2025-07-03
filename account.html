@@ -2,54 +2,70 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>لوحة المستخدم</title>
+  <title>رصيدي - لغتنا الأم</title>
   <script src="https://cdn.jsdelivr.net/npm/backendless@7.2.5/dist/backendless.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@900&display=swap" rel="stylesheet">
+
   <style>
-    body { font-family: 'Cairo', sans-serif; background: #f5f5f5; padding: 20px; }
-    #adminPanel, #userPanel {
-      background: white; padding: 20px; border-radius: 12px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.1); margin-top: 20px;
+    body {
+      background: linear-gradient(to right, #111, #222);
+      color: white;
+      font-family: 'Cairo', sans-serif;
+      text-align: center;
+      padding: 50px 20px;
     }
-    .lecture { background: #f9f9f9; padding: 10px; margin: 5px 0; border-radius: 6px; }
-    .btn, input, select {
-      width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px;
+
+    .container {
+      background-color: #1e1e1e;
+      padding: 40px;
+      border-radius: 20px;
+      max-width: 500px;
+      margin: auto;
+      box-shadow: 0 0 20px #F737FF55;
     }
-    .btn { background: #4CAF50; color: white; border: none; cursor: pointer; }
-    .alert { background: #e0f2e9; padding: 10px; border-radius: 6px; color: #2e7d32; margin-top: 10px; }
-    .whatsapp-box {
-      margin-top: 20px; padding: 10px; background: #fff3cd;
-      border: 1px solid #ffeeba; color: #856404; border-radius: 6px;
+
+    h1 {
+      font-size: 32px;
+      color: #F737FF;
+      margin-bottom: 20px;
+    }
+
+    p {
+      font-size: 20px;
+      color: #ddd;
+    }
+
+    .balance {
+      font-size: 48px;
+      color: #00ff99;
+      margin-top: 20px;
+    }
+
+    button {
+      margin-top: 30px;
+      padding: 12px 24px;
+      background-color: #F737FF;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #d92fd9;
     }
   </style>
 </head>
 <body>
-  <h2>لوحة المستخدم</h2>
-  <p id="welcome"></p>
-  <p id="coinsDisplay">جاري تحميل رصيدك...</p>
 
-  <!-- لوحة الأدمن -->
-  <div id="adminPanel" style="display:none;">
-    <h3>لوحة تحكم الأدمن</h3>
-    <select id="userList"></select>
-    <input type="number" id="amount" placeholder="عدد العملات">
-    <button class="btn" onclick="addCoins()">➕ إضافة</button>
-    <button class="btn" onclick="removeCoins()">➖ خصم</button>
-    <div id="alertBox" class="alert" style="display:none;"></div>
-  </div>
-
-  <!-- لوحة المستخدم العادي -->
-  <div id="userPanel" style="display:none;">
-    <h3>📚 المحاضرات المتاحة</h3>
-    <div class="lecture">محاضرة 1: HTML & CSS</div>
-    <div class="lecture">محاضرة 2: JavaScript</div>
-    <div class="lecture">محاضرة 3: تصميم واجهات</div>
-    <p>⚠️ أنت لم تشترِ محاضرات بعد.</p>
-
-    <div class="whatsapp-box">
-      هل تريد شراء محاضرات أو شحن العملات؟ تواصل معنا عبر واتساب:<br>
-      <a href="https://wa.me/201234567890" target="_blank">اضغط هنا للتواصل</a>
-    </div>
+  <div class="container">
+    <h1>👛 رصيد حسابك</h1>
+    <p>مرحبًا، <span id="userEmail">جاري التحميل...</span></p>
+    <div class="balance" id="userCoins">--</div>
+    <button onclick="logout()">تسجيل خروج</button>
   </div>
 
   <script>
@@ -59,66 +75,23 @@
 
     Backendless.UserService.getCurrentUser()
       .then(user => {
-        if (!user) return alert("يرجى تسجيل الدخول أولاً.");
-        document.getElementById("welcome").innerText = `مرحبًا، ${user.email}`;
-        document.getElementById("coinsDisplay").innerText = `رصيدك: ${user.coins || 0} عملة`;
-
-        if (user.role === "admin") {
-          document.getElementById("adminPanel").style.display = "block";
-          loadUsers();
-        } else {
-          document.getElementById("userPanel").style.display = "block";
+        if (!user) {
+          alert("يرجى تسجيل الدخول أولاً.");
+          window.location.href = "login.html";
+          return;
         }
+
+        document.getElementById("userEmail").innerText = user.email;
+        document.getElementById("userCoins").innerText = `${user.coins || 0} 🪙`;
       });
 
-    function loadUsers() {
-      Backendless.Data.of("Users").find().then(users => {
-        const list = document.getElementById("userList");
-        list.innerHTML = "";
-        users.forEach(u => {
-          const opt = document.createElement("option");
-          opt.value = u.objectId;
-          opt.text = `${u.email} - ${u.coins || 0} عملة`;
-          list.appendChild(opt);
-        });
-      });
-    }
-
-    function showAlert(msg) {
-      const alertBox = document.getElementById("alertBox");
-      alertBox.innerText = msg;
-      alertBox.style.display = "block";
-      setTimeout(() => alertBox.style.display = "none", 3000);
-    }
-
-    function addCoins() {
-      const id = document.getElementById("userList").value;
-      const amount = parseInt(document.getElementById("amount").value);
-      if (isNaN(amount) || amount <= 0) return showAlert("أدخل عدد صحيح.");
-
-      Backendless.Data.of("Users").findById(id).then(user => {
-        user.coins = (user.coins || 0) + amount;
-        return Backendless.Data.of("Users").save(user);
-      }).then(() => {
-        showAlert("تمت الإضافة بنجاح.");
-        loadUsers();
-      });
-    }
-
-    function removeCoins() {
-      const id = document.getElementById("userList").value;
-      const amount = parseInt(document.getElementById("amount").value);
-      if (isNaN(amount) || amount <= 0) return showAlert("أدخل عدد صحيح.");
-
-      Backendless.Data.of("Users").findById(id).then(user => {
-        if ((user.coins || 0) < amount) return showAlert("رصيد غير كافٍ.");
-        user.coins -= amount;
-        return Backendless.Data.of("Users").save(user);
-      }).then(() => {
-        showAlert("تم الخصم بنجاح.");
-        loadUsers();
+    function logout() {
+      Backendless.UserService.logout().then(() => {
+        alert("تم تسجيل الخروج.");
+        window.location.href = "login.html";
       });
     }
   </script>
+
 </body>
 </html>
